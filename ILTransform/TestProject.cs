@@ -201,7 +201,7 @@ namespace ILTransform
             return char.IsDigit(c) || char.IsLetter(c) || c == '_' || c == '@' || c == '$' || c == '`';
         }
 
-        private static Regex PublicRegex = new Regex(@"public\s+");
+        private static Regex PublicRegex = new Regex(@"(\s|^)public(\s|$)");
         private static Regex NotPublicRegex = new Regex(@"(?:private|internal)(?<ws>\s+)");
 
         // Side effect: Changes private/internal to public in 'line'
@@ -223,15 +223,21 @@ namespace ILTransform
             if (force)
             {
                 int charIndex = line.SkipWhiteSpace();
+                string preffix = line[..charIndex];
                 if (isILTest)
                 {
+                    // They always start like .method or .class but might end without spaces
                     charIndex = line.SkipNonWhiteSpace(charIndex);
+                    preffix = string.Concat(line.AsSpan(0, charIndex), " "); // Add space and move index
                     if (charIndex < line.Length)
                     {
                         charIndex++;
                     }
                 }
-                line = string.Concat(line.AsSpan(0, charIndex), "public ", line.AsSpan(charIndex));
+                // Avoid white space at the end if line is ".class" or add white space if something continues
+                // after the new "public" token.
+                string suffix = charIndex == line.Length ? "" : string.Concat(" ", line.AsSpan(charIndex));
+                line = string.Concat(preffix, "public", suffix);
                 return true;
             }
 

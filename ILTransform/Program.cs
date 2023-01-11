@@ -15,6 +15,7 @@ namespace ILTransform
         public bool FixImplicitSharedLibraries;
         public bool AddILFactAttributes;
         public bool MakePublic;
+        public bool CollapseMainSign; // should be used alone as it breaks most of the indexes
         public bool AddProcessIsolation;
         public bool UnifyDbgRelProjects;
         public bool CleanupILModule;
@@ -59,6 +60,10 @@ namespace ILTransform
                         else if (arg == "-public")
                         {
                             settings.MakePublic = true;
+                        }
+                        else if (arg =="-collapse-main-sign")
+                        {
+                            settings.CollapseMainSign = true;
                         }
                         else if (arg == "-prociso")
                         {
@@ -109,6 +114,7 @@ namespace ILTransform
                         || settings.FixImplicitSharedLibraries
                         || settings.AddILFactAttributes
                         || settings.MakePublic
+                        || settings.CollapseMainSign
                         || settings.AddProcessIsolation
                         || settings.UnifyDbgRelProjects
                         || settings.CleanupILModule

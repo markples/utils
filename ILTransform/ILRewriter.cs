@@ -97,6 +97,24 @@ namespace ILTransform
                 int lineIndex = _testProject.LastMainMethodDefLine;
                 if (lineIndex >= 0)
                 {
+                    if (_settings.CollapseMainSign
+                        && (_testProject.FirstMainMethodDefLine != -1)
+                        && (_testProject.FirstMainMethodDefLine < _testProject.LastMainMethodDefLine))
+                    {
+                        int mainLine = _testProject.FirstMainMethodDefLine;
+                        string collapsedLine = lines[mainLine].TrimEnd();
+                        for(mainLine++; mainLine <= _testProject.LastMainMethodDefLine; mainLine++)
+                        {
+                            collapsedLine += " " + lines[mainLine].Trim();
+                        }
+                        // overwrite first main line and remove the rest
+                        lines[_testProject.FirstMainMethodDefLine] = collapsedLine;
+                        int mainSignLineLength = _testProject.LastMainMethodDefLine - _testProject.FirstMainMethodDefLine;
+                        lines.RemoveRange(_testProject.FirstMainMethodDefLine+1, mainSignLineLength);
+                        rewritten = true;
+                        // nothing else should be done with this file as indexes are now broken
+                    }
+
                     if (_settings.AddILFactAttributes)
                     {
                         int lineInBody = lines.FindIndex(lineIndex, line => line.Contains('{') || (!isILTest && line.Contains("=>")));
