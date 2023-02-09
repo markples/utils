@@ -78,6 +78,34 @@ configs = \
 
 config_index = 0
 
+def group_test_by_directory(tests):
+    tests_by_dir = {}
+    for test_name, value in tests.items():
+        test_dir = "\\".join(test_name.split("\\")[:-2])
+        if test_dir not in tests_by_dir:
+            tests_by_dir[test_dir] = {}
+        tests_by_dir[test_dir][test_name] = value
+    return tests_by_dir
+
+def print_grouped_by_dir(test1, tests2):
+    testsgroup1 = group_test_by_directory(tests1)
+    testsgroup2 = group_test_by_directory(tests2)
+
+    for (directory_name, tests) in testsgroup1.items():
+        tests2 = testsgroup2.get(directory_name, {})
+        tests1_only = tests.keys() - tests2.keys()
+        tests2_only = tests2.keys() - tests.keys()
+        all_distinct_tests = list(tests1_only | tests2_only)
+        all_distinct_tests.sort()
+        if 0 < len(all_distinct_tests):
+            print(f"\n\nDirectory {directory_name}")
+            for test_name in all_distinct_tests:
+                short_name = "\\".join(test_name.split("\\")[-2:])
+                if test_name in tests1_only:
+                    print(f"\t Only in 1: {short_name}")
+                else:
+                    print(f"\t Only in 2: {short_name}")
+
 def get(files):
     config = configs[config_index]
     drop1 = config['drop1']
@@ -106,10 +134,13 @@ def get(files):
     #        print(name)
 
     # Print differences
-    print_diff(tests1, tests2, '1')
-    print_diff(tests2, tests1, '2')
+    #print_diff(tests1, tests2, '1')
+    #print_diff(tests2, tests1, '2')
 
     # Extend comparison/reporting here
+    print_grouped_by_dir(tests1, tests2)
+    
+
 
 if __name__ == '__main__':
     get(sys.argv)
