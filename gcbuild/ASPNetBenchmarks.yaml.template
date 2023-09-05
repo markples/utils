@@ -1,0 +1,26 @@
+runs:
+#  baseline:
+#    corerun: C:\CoreRuns\Empty\
+#    environment_variables:
+#      COMPlus_GCServer: 1
+  {save_name}:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCServer: 1
+      COMPlus_GCName: clrgcexp_{save_name}.dll
+
+environment:
+  environment_variables: {}
+  default_max_seconds: 300
+benchmark_settings:
+  benchmark_file: C:\r\utils\gcbuild\aspnet.csv
+output:
+  path: C:\home\repro\87826\asp_{save_name}_{trace_type}
+  columns: 
+  percentage_disk_remaining_to_stop_per_run: 0
+  all_columns: 
+  formats:
+  - markdown
+name: ASPNetBenchmarks
+trace_configurations:
+  type: {trace_type}
