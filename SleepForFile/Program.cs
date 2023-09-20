@@ -10,7 +10,7 @@ string? filename = null;
 string? program = null;
 string[] programArguments = Array.Empty<string>();
 int minMillis = 0;
-int maxMillis = 1000;
+int maxMillis = 5000;
 
 DateTime start = DateTime.Now;
 bool done = false;
