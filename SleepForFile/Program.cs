@@ -9,8 +9,18 @@ int argIndex = 0;
 string? filename = null;
 string? program = null;
 string[] programArguments = Array.Empty<string>();
-int minMillis = 0;
+int minMillis = 1000;
 int maxMillis = 5000;
+
+if (((string envMinString = Environment.GetEnvironmentVariable("SLEEP_FOR_FILE_MIN")) != null) && Int32.TryParse(envMinString, out int envMin))
+{
+    minMillis = envMin;
+}
+
+if (((string envMaxString = Environment.GetEnvironmentVariable("SLEEP_FOR_FILE_MAX")) != null) && Int32.TryParse(envMaxString, out int envMax))
+{
+    maxMillis = envMax;
+}
 
 DateTime start = DateTime.Now;
 bool done = false;
