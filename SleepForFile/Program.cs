@@ -12,12 +12,14 @@ string[] programArguments = Array.Empty<string>();
 int minMillis = 1000;
 int maxMillis = 5000;
 
-if (((string envMinString = Environment.GetEnvironmentVariable("SLEEP_FOR_FILE_MIN")) != null) && Int32.TryParse(envMinString, out int envMin))
+string? envMinString = Environment.GetEnvironmentVariable("SLEEP_FOR_FILE_MIN");
+if ((envMinString != null) && Int32.TryParse(envMinString, out int envMin))
 {
     minMillis = envMin;
 }
 
-if (((string envMaxString = Environment.GetEnvironmentVariable("SLEEP_FOR_FILE_MAX")) != null) && Int32.TryParse(envMaxString, out int envMax))
+string? envMaxString = Environment.GetEnvironmentVariable("SLEEP_FOR_FILE_MAX");
+if ((envMaxString != null) && Int32.TryParse(envMaxString, out int envMax))
 {
     maxMillis = envMax;
 }
