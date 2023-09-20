@@ -126,7 +126,7 @@ string ArgValue(string[] args, int argIndex)
     if (argIndex + 1 >= args.Length)
     {
         Usage();
-        throw new Exception($"File argument required");
+        throw new Exception($"Argument value needed for {args[argIndex]}");
     }
 
     string value = args[argIndex + 1];
@@ -146,7 +146,7 @@ int IntArgValue(string[] args, ref int argIndex)
     if (!Int32.TryParse(stringValue, out int value))
     {
         Usage();
-        throw new Exception($"Integer argument value needed for {stringValue}");
+        throw new Exception($"Integer argument value needed for {args[argIndex]}");
     }
 
     argIndex += 2;
