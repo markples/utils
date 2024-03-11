@@ -680,8 +680,11 @@ class Parser(ABC):
                             )
 
                             if not in_trash:
+                                # do something better here...
+                                clean_func_start_name = func_start_name.replace('?', '_').replace(':', '_').replace('<', '_').replace('>', '_')
+
                                 stats.incr(CounterKind.EarlyCount)
-                                func = funcs.get(func_start_name)
+                                func = funcs.get(clean_func_start_name)
                                 if func:
                                     # The same function name appears multiple
                                     # times in the input. It's not clear what
@@ -689,8 +692,8 @@ class Parser(ABC):
                                     func.lines.append("\n")
                                     func.lines.append("\n")
                                 else:
-                                    funcs[func_start_name] = func = new_Function()
-                                current.append(Parser.Item(func_name=func_start_name, func=func))
+                                    funcs[clean_func_start_name] = func = new_Function()
+                                current.append(Parser.Item(func_name=clean_func_start_name, func=func))
 
                 if not in_trash:
                     with stats.timers[TimeKind.AddFunc]:
@@ -867,8 +870,10 @@ class X64Parser(Parser):
         line = self.encoding_bytes2.sub(r"", line)
         return line
 
+    address = re.compile(r"[0-9A-F]{16}|[0-9A-F]{4,}h")
     def canon_line(self, line):
-        # possible future improvement: remove distracting numbers?
+        line = self.address.sub(r"", line)
+        # possible future improvement: remove more distracting numbers?
 
         return line
 

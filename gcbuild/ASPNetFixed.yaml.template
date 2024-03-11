@@ -1,0 +1,71 @@
+# Based on src\benchmarks\gc\GC.Infrastructure\Configurations\ASPNetBenchmarks\ASPNetBenchmarks.yaml
+
+runs:
+#  baseline:
+#    corerun: C:\CoreRuns\Empty\
+#    environment_variables:
+#      COMPlus_GCServer: 1
+  {save_name}_0:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: 6
+  {save_name}_1:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: 9
+  {save_name}_2:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: b
+  {save_name}_3:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: d
+  {save_name}_4:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: f
+  {save_name}_5:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: 11
+  {save_name}_6:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: 13
+  {save_name}_7:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: 15
+  {save_name}_8:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: 18
+  {save_name}_9:
+    corerun: {core_root}\clrgcexp_{save_name}.dll
+    environment_variables:
+      COMPlus_GCDatasFixedHeapCount: 1b
+
+environment:
+  environment_variables:
+    COMPlus_GCServer: 1
+    COMPlus_GCDynamicAdaptationMode: 1
+    COMPlus_GCName: clrgcexp_{save_name}.dll
+    COMPlus_GCLogEnabled: 1
+    COMPlus_GCLogFile: .\gclog
+    COMPlus_GCLogFileSize: 10
+  default_max_seconds: 400
+
+benchmark_settings:
+  benchmark_file: C:\r\utils\gcbuild\aspnet.f.csv
+  additional_arguments: --application.aspNetCoreVersion 8.0.0-rtm.23504.12 --application.runtimeVersion 8.0.0-rtm.23503.15 --application.sdkVersion 8.0.100-rtm.23503.6
+output:
+  path: C:\home\repro\{save_family}\asp_{save_name}_{trace_type}{output_suffix}
+  columns: 
+  percentage_disk_remaining_to_stop_per_run: 0
+  all_columns: 
+  formats:
+  - markdown
+name: ASPNetBenchmarks
+trace_configurations:
+  type: {trace_type}
