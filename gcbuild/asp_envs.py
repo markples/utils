@@ -1,5 +1,9 @@
 configs = \
 {
+    "dup":
+    {
+    },
+
     "svr":
     {
         "DOTNET_GCDynamicAdaptationMode": 0,
@@ -38,6 +42,13 @@ configs = \
     {
         "DOTNET_GCMaxHeapCount": 4,
         "DOTNET_GCDynamicAdaptationMult": 8,
+        "DOTNET_GCDynamicAdaptationCalcMax": 10,
+    },
+
+    "mult32x10":
+    {
+        "DOTNET_GCMaxHeapCount": 4,
+        "DOTNET_GCDynamicAdaptationMult": 32,
         "DOTNET_GCDynamicAdaptationCalcMax": 10,
     },
 }

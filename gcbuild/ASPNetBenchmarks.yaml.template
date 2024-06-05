@@ -15,7 +15,7 @@ benchmark_settings:
   benchmark_file: {benchmark_file}
   additional_arguments: --application.aspNetCoreVersion 8.0.0-rtm.23504.12 --application.runtimeVersion 8.0.0-rtm.23503.15 --application.sdkVersion 8.0.100-rtm.23503.6
 output:
-  path: C:\home\repro\{save_family}\asp_{save_name}{output_suffix}_{trace_type}
+  path: {save_root}\{save_family}\asp_{save_name}_{trace_type}
   columns: 
   percentage_disk_remaining_to_stop_per_run: 0
   all_columns: 
