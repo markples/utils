@@ -81,6 +81,9 @@ def parse():
     parser.add_argument('--gcperfsim-dir', default=str(gcbuild_path.joinpath('gcperfsim')))
     parser.add_argument('--gcperfsim-file', default='GCPerfSim_NW_F.yaml')
 
+    parser.add_argument('--rf-dir', default=str(gcbuild_path.joinpath('rf')))
+    parser.add_argument('--rf-file', default='testmix_gc_ci.config')
+
     parser.add_argument('--trace-type', default='gc', choices=['gc', 'verbose', 'cpu', 'threadtime', 'none'])
     parser.add_argument('--testmix-time', default="00:01:00")
 
@@ -246,9 +249,13 @@ def specialize(args, file, replacements=None):
 
 def run_rf(args):
     os.chdir(f'{args.artifacts_root}\\GC\Stress\Framework\ReliabilityFramework')
-    template = 'C:\\r\\utils\\gcbuild\\testmix_gc_ci.config.template'
+    template = str(pathlib.Path(args.rf_dir).joinpath(args.rf_file))
     specific = specialize(args, template)
-    subprocess.run(f'ReliabilityFramework.cmd -coreroot {args.core_root} {specific}')
+    exec = f'ReliabilityFramework.cmd -coreroot {args.core_root} {specific}'
+    print()
+    print(exec)
+    print()
+    subprocess.run(exec, check=True)
 
 def run_micro(args):
     template = 'C:\\r\\utils\\gcbuild\\Microbenchmarks.yaml.template'

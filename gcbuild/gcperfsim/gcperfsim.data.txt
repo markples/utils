@@ -1,5 +1,4 @@
 # "alloc" phase with 10 threads allocating at full speed
-finishWithFullCollect
 [phase]
   totalAllocGB 1
   totalLiveGB 0.1
