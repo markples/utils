@@ -18,9 +18,11 @@ class ChDir(object):
 
     def __enter__(self):
         self.restore = os.getcwd()
+        print(f"[CD]: {self.path}")
         os.chdir(self.path)
 
     def __exit__(self, type, value, traceback):
+        print(f"[CD]: {self.restore}")
         os.chdir(self.restore)
 
     
@@ -84,7 +86,7 @@ def parse():
     parser.add_argument('--rf-dir', default=str(gcbuild_path.joinpath('rf')))
     parser.add_argument('--rf-file', default='testmix_gc_ci.config')
 
-    parser.add_argument('--trace-type', default='gc', choices=['gc', 'verbose', 'cpu', 'threadtime', 'none'])
+    parser.add_argument('--trace-type', default='gc', choices=['gc', 'gc_verbose', 'verbose', 'cpu', 'threadtime', 'none'])
     parser.add_argument('--testmix-time', default="00:01:00")
 
     parser.add_argument('runtime_root')
@@ -109,7 +111,8 @@ def validate(args):
         raise Exception(f"{args.runtime_root} does not exist")
 
     args.save_family_loc = os.path.join(args.save_root, args.save_family)
-    args.save_loc = os.path.join(args.save_family_loc, args.save_names[0][0])
+    args.save_locs = [os.path.join(args.save_family_loc, save_name[0]) for save_name in args.save_names]
+    args.save_loc = args.save_locs[0]
     args.output_suffix_use = "-" + args.save_names[0][1] if args.save_names[0][1] else ""
     args.build_and_copy = args.build and not args.build_only
     args.allow_local_changes = args.allow_local_changes or args.build_only
@@ -196,7 +199,8 @@ def copy(args):
 
 def run(args):
     if args.run:
-        setup = setup_run(args)
+        setups = setup_run(args)
+        setup = setups[0]
         if 'rf' in args.run:
             with setup:
                 run_rf(args)
@@ -214,14 +218,21 @@ def run(args):
                 run_gcperfsim_cmd(args)
 
 def setup_run(args):
-    src = f'{args.save_loc}\\clrgcexp.dll'
-    gc_name = f'clrgcexp_{args.save_names[0][0]}.dll'
-    dst = f'{args.core_root}\\{gc_name}'
-    print(f'Copying GC from {src} to {dst}')
-    distutils.file_util.copy_file(src, dst)
-    return EnvVars(complus_gcname = gc_name, CORE_ROOT = args.core_root)
+    envs = []
+    for save_loc, save_name in zip(args.save_locs, args.save_names):
+        src = f'{save_loc}\\clrgcexp.dll'
+        gc_name = f'clrgcexp_{save_name[0]}.dll'
+        dst = f'{args.core_root}\\{gc_name}'
+        print(f'Copying GC from {src} to {dst}')
+        distutils.file_util.copy_file(src, dst)
+
+        envs.append(EnvVars(DOTNET_GCName = gc_name, CORE_ROOT = args.core_root))
+
+    return envs
 
 def specialize(args, file, replacements=None):
+    if replacements is None:
+        replacements = {}
     ending = '.template'
     if file.endswith(ending):
         new_file = file[:-len(ending)]
@@ -229,45 +240,52 @@ def specialize(args, file, replacements=None):
         new_file = file + '.specific'
 
     with open(file, 'r') as r, open(new_file, 'w') as w:
+        replacements = \
+        {
+            'testmix_time': args.testmix_time,
+            'save_root': args.save_root,
+            'save_family': args.save_family,
+            'save_name': args.save_names[0][0],
+            'core_root': args.core_root,
+            'trace_type': args.trace_type,
+            'output_suffix': args.output_suffix_use,
+            'iterations': args.iterations,
+            **replacements
+        }
+
         for line in r:
-            line = (
-                line
-                .replace('{testmix_time}', args.testmix_time)
-                .replace('{save_root}', args.save_root)
-                .replace('{save_family}', args.save_family)
-                .replace('{save_name}', args.save_names[0][0])
-                .replace('{core_root}', args.core_root)
-                .replace('{trace_type}', args.trace_type)
-                .replace('{output_suffix}', args.output_suffix_use)
-            )
-            if replacements:
-                # Multi-line?
-                line = line.format(**replacements)
+            # hack
+            line = line.replace('{}', '%%%%%%%%%%')
+            # Multi-line?
+            line = line.format(**replacements)
+            line = line.replace('%%%%%%%%%%', '{}')
 
             w.write(line)
     return new_file
 
 def run_rf(args):
-    os.chdir(f'{args.artifacts_root}\\GC\Stress\Framework\ReliabilityFramework')
-    template = str(pathlib.Path(args.rf_dir).joinpath(args.rf_file))
-    specific = specialize(args, template)
-    exec = f'ReliabilityFramework.cmd -coreroot {args.core_root} {specific}'
-    print()
-    print(exec)
-    print()
-    subprocess.run(exec, check=True)
+    with ChDir(f'{args.artifacts_root}\\GC\Stress\Framework\ReliabilityFramework'):
+        template = str(pathlib.Path(args.rf_dir).joinpath(args.rf_file))
+        specific = specialize(args, template)
+        exec = f'ReliabilityFramework.cmd -coreroot {args.core_root} {specific}'
+        with EnvVars(RunningLongGCTests = '1'):
+            print()
+            print(exec)
+            print()
+            subprocess.run(exec, check=True)
 
 def run_micro(args):
     template = 'C:\\r\\utils\\gcbuild\\Microbenchmarks.yaml.template'
     specific = specialize(args, template)
     print(f'Running microbenchmarks - this needs an elevated prompt')
-    subprocess.run(f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net7.0\\GC.Infrastructure.exe microbenchmarks --configuration {specific}', check=True)
+    subprocess.run(f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net8.0\\GC.Infrastructure.exe microbenchmarks --configuration {specific}', check=True)
 
 # Omits trailing newline
-def run_block(title, args):
+# if is_gcperfsim==False, then ASP.NET (TODO: generalize)
+def run_block(title, is_gcperfsim, args):
 # coreruns:
 #   {save_name}{output_suffix}_{x}:
-#     corerun: {core_root}\clrgcexp_{save_name}.dll
+#no?     corerun: {core_root}\clrgcexp_{save_name}.dll
 #     path: C:\CoreRuns\EmitEvent_Core_Root\corerun.exe
 #     environment_variables:
 #       DOTNET_GCName: clrgcexp_{save_name}.dll
@@ -283,14 +301,21 @@ def run_block(title, args):
     indent2 = indent1 + indent1
     indent3 = indent2 + indent1
     run_lines = [f'{title}:']
+
+    # Using GC infra iteration support for iterations for gcperfsim
+    # TODO: use GC infra iteration support for ASP.NET
+    iterations = 1 if is_gcperfsim else args.iterations
+
     for save_name, output_suffix in args.save_names:
         output_suffix_use = "-" + output_suffix if output_suffix else ""
 
         for iter_num in range(args.iterations):
-            run_lines.append(f'{indent1}{save_name}{output_suffix_use}_{iter_num}:')
-            run_lines.append(f'{indent2}corerun: {args.core_root}\clrgcexp_{save_name}.dll')
-            #if title == 'coreruns': # using the name like this is a hack
-            #    run_lines.append(f'{indent2}path: {args.core_root}\\corerun.exe')
+            iter_suffix = '' if is_gcperfsim else f'_{iter_num}'
+            run_lines.append(f'{indent1}{save_name}{output_suffix_use}{iter_suffix}:')
+            if is_gcperfsim:
+                run_lines.append(f'{indent2}path: {args.core_root}\\corerun.exe')
+            else:
+                run_lines.append(f'{indent2}corerun: {args.core_root}\clrgcexp_{save_name}.dll')
             run_lines.append(f'{indent2}environment_variables:')
             run_lines.append(f'{indent3}DOTNET_GCName: clrgcexp_{save_name}.dll')
             if output_suffix and output_suffix in asp_envs.configs:
@@ -338,18 +363,18 @@ def run_asp(args):
 
     specific = specialize(args, template,
         {
-            'run': run_block('runs', args),
+            'run': run_block('runs', False, args),
             'benchmark_file': args.asp_benchmarks_use
         })
     print(f'Running aspnetbenchmarks {specific} - this needs an elevated prompt')
-    print(f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net7.0\\GC.Infrastructure.exe aspnetbenchmarks --configuration {specific}')
-    subprocess.run(f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net7.0\\GC.Infrastructure.exe aspnetbenchmarks --configuration {specific}', check=True)
+    print(f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net8.0\\GC.Infrastructure.exe aspnetbenchmarks --configuration {specific}')
+    subprocess.run(f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net8.0\\GC.Infrastructure.exe aspnetbenchmarks --configuration {specific}', check=True)
 
 def run_gcperfsim(args):
     template = str(pathlib.Path(args.gcperfsim_dir).joinpath(args.gcperfsim_file))
-    specific = specialize(args, template, { 'run': run_block('coreruns', args) })
+    specific = specialize(args, template, { 'coreruns': run_block('coreruns', True, args) })
     print(f'Running gcperfsim - this needs an elevated prompt')
-    exec = f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net7.0\\GC.Infrastructure.exe gcperfsim --configuration {specific}' # --server aspnet-perf-win
+    exec = f'C:\\r\\performance\\artifacts\\bin\\GC.Infrastructure\\Release\\net8.0\\GC.Infrastructure.exe gcperfsim --configuration {specific}' # --server aspnet-perf-win
     print()
     print(exec)
     print()
@@ -357,7 +382,7 @@ def run_gcperfsim(args):
 
 def run_gcperfsim_file(args):
     specific = 'C:\\r\\utils\\gcbuild\\gcperfsim.data.txt'
-    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net7.0\\GCPerfSim.dll -file {specific}'
+    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net8.0\\GCPerfSim.dll -file {specific}'
     print()
     print(exec)
     print()
@@ -365,7 +390,7 @@ def run_gcperfsim_file(args):
 
 def run_gcperfsim_cmd(args):
     cmdline = '-tc 36 -tagb 100 -tlgb 0 -lohar 1000 -pohar 0 -sohsr 100-4000 -lohsr 16002400-16004800 -pohsr 100-204800 -sohsi 0 -lohsi 0 -pohsi 0 -sohpi 0 -lohpi 0 -sohfi 0 -lohfi 0 -pohfi 0 -allocType reference -testKind time'
-    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net7.0\\GCPerfSim.dll {cmdline}'
+    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net8.0\\GCPerfSim.dll {cmdline}'
     print()
     print(exec)
     print()

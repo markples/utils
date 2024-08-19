@@ -1,40 +1,14 @@
 runs:
-  normal:
-    override_parameters:
-      sohsi: 50 
-    environment_variables: {}
-
-  soh_pinning:
-    override_parameters:
-      sohsi: 50 
-      sohpi: 100 
-    environment_variables: {}
-
-  poh:
-    override_parameters:
-      sohsi: 50
-      pohsi: 100
-      pohar: 100
-      rpohsi: 50
-    environment_variables: {}
-
-  loh:
-    override_parameters:
-      sohsi: 50
-      lohar: 100
-      rlohsi: 50
-      lohsi: 50
-    environment_variables: {}
-
+  16mb16p:
 gcperfsim_configurations:
   parameters:
-    tc: 36
-    tagb: 540
-    tlgb: 2 
-    lohar: 0
+    tc: 1
+    tagb: 100
+    tlgb: 0
+    lohar: 1000
     pohar: 0
     sohsr: 100-4000
-    lohsr: 102400-204800
+    lohsr: 0x1000000-0x1000000
     pohsr: 100-204800
     sohsi: 0
     lohsi: 0
@@ -44,25 +18,16 @@ gcperfsim_configurations:
     sohfi: 0
     lohfi: 0
     pohfi: 0
-    ramb: 20 
-    rlmb: 2
-    allocType: reference
+    allocType: simple
     testKind: time
   gcperfsim_path: C:\r\performance\artifacts\bin\GCPerfSim\release\net7.0\GCPerfSim.dll
 environment:
   environment_variables:
     DOTNET_gcServer: 1
-    DOTNET_GCHeapCount: 12
+    DOTNET_GCHeapCount: 16
   default_max_seconds: 300
-  iterations: {iterations}
-
+  iterations: 1
 {coreruns}
-
-#coreruns:
-#  {save_name}:
-#    path: {core_root}\corerun.exe
-#    environment_variables:
-#      DOTNET_GCName: clrgcexp_{save_name}.dll
 
 linux_coreruns: 
 output:
@@ -138,6 +103,6 @@ output:
   formats:
   - markdown
   - json
-name: repro-notify
+name: 16mb
 trace_configurations:
   type: {trace_type}
