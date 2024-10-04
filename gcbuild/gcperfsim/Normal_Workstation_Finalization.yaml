@@ -52,11 +52,7 @@ environment:
     DOTNET_gcServer: 0
   default_max_seconds: 300
   iterations: 1
-coreruns:
-  {save_name}:
-    path: {core_root}\corerun.exe
-    environment_variables:
-      DOTNET_GCName: clrgcexp_{save_name}.dll
+{coreruns}
 linux_coreruns: 
 output:
   path: {save_root}\{save_family}\gcperfsim_{save_name}_{trace_type}{output_suffix}

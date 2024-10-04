@@ -286,7 +286,7 @@ def run_block(title, is_gcperfsim, args):
 # coreruns:
 #   {save_name}{output_suffix}_{x}:
 #no?     corerun: {core_root}\clrgcexp_{save_name}.dll
-#     path: C:\CoreRuns\EmitEvent_Core_Root\corerun.exe
+#     path: {core_root}\corerun.exe
 #     environment_variables:
 #       DOTNET_GCName: clrgcexp_{save_name}.dll
 #       {{environment_variables}}
@@ -309,7 +309,7 @@ def run_block(title, is_gcperfsim, args):
     for save_name, output_suffix in args.save_names:
         output_suffix_use = "-" + output_suffix if output_suffix else ""
 
-        for iter_num in range(args.iterations):
+        for iter_num in range(iterations):
             iter_suffix = '' if is_gcperfsim else f'_{iter_num}'
             run_lines.append(f'{indent1}{save_name}{output_suffix_use}{iter_suffix}:')
             if is_gcperfsim:
@@ -319,7 +319,6 @@ def run_block(title, is_gcperfsim, args):
             run_lines.append(f'{indent2}environment_variables:')
             run_lines.append(f'{indent3}DOTNET_GCName: clrgcexp_{save_name}.dll')
             if output_suffix and output_suffix in asp_envs.configs:
-                print(asp_envs.configs[output_suffix])
                 for k, v in asp_envs.configs[output_suffix].items():
                     run_lines.append(f'{indent3}{k}: {v}')
 
@@ -382,7 +381,7 @@ def run_gcperfsim(args):
 
 def run_gcperfsim_file(args):
     specific = 'C:\\r\\utils\\gcbuild\\gcperfsim.data.txt'
-    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net8.0\\GCPerfSim.dll -file {specific}'
+    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net7.0\\GCPerfSim.dll -file {specific}'
     print()
     print(exec)
     print()
@@ -390,7 +389,7 @@ def run_gcperfsim_file(args):
 
 def run_gcperfsim_cmd(args):
     cmdline = '-tc 36 -tagb 100 -tlgb 0 -lohar 1000 -pohar 0 -sohsr 100-4000 -lohsr 16002400-16004800 -pohsr 100-204800 -sohsi 0 -lohsi 0 -pohsi 0 -sohpi 0 -lohpi 0 -sohfi 0 -lohfi 0 -pohfi 0 -allocType reference -testKind time'
-    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net8.0\\GCPerfSim.dll {cmdline}'
+    exec = f'{args.core_root}\\corerun.exe C:\\r\\performance\\artifacts\\bin\\GCPerfSim\\{args.configuration}\\net7.0\\GCPerfSim.dll {cmdline}'
     print()
     print(exec)
     print()

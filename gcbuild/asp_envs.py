@@ -51,4 +51,12 @@ configs = \
         "DOTNET_GCDynamicAdaptationMult": 32,
         "DOTNET_GCDynamicAdaptationCalcMax": 10,
     },
+
+    "log":
+    {
+        "DOTNET_GCLogEnabled": 1,
+        "DOTNET_GCLogFile": ".\gclog",
+        "DOTNET_GCLogFileSize": 10
+    },
+
 }

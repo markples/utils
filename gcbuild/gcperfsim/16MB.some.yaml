@@ -104,6 +104,6 @@ output:
   formats:
   - markdown
   - json
-name: 16mb
+name: 16mb-some
 trace_configurations:
   type: {trace_type}

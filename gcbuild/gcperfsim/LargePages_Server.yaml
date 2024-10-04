@@ -52,15 +52,7 @@ environment:
     DOTNET_GCHeapHardLimitPOH: 0x100000000
   default_max_seconds: 300
   iterations: 1
-coreruns:
-  baseline:
-    path: C:\CoreRuns\EmitEvent_Core_Root\corerun.exe
-    environment_variables:
-      DOTNET_GCName: clrgc.dll
-  run:
-    path: C:\CoreRuns\EmitEvent_Core_Root\corerun.exe
-    environment_variables:
-      DOTNET_GCName: clrgc.dll
+{coreruns}
 linux_coreruns: 
 output:
   path: C:\InfraRuns\RunNew_All\GCPerfSim\LargePages_Server

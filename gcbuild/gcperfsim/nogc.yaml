@@ -5,7 +5,7 @@ gcperfsim_configurations:
     tc: 1
     requestGCGen: 2
     requestNoGCMB: 1000
-    tagb: 0.1
+    tagb: 0.01
     sohsi: 0
     sohfi: 0
     sohpi: 0
@@ -16,11 +16,7 @@ environment:
     DOTNET_GCHeapCount: 8
   default_max_seconds: 300
   iterations: 1
-coreruns:
-  {save_name}:
-    path: {core_root}\corerun.exe
-    environment_variables:
-      DOTNET_GCName: clrgcexp_{save_name}.dll
+{coreruns}
 linux_coreruns: 
 output:
   path: {save_root}\{save_family}\gcperfsim_{save_name}_{trace_type}{output_suffix}

@@ -37,15 +37,7 @@ gcperfsim_configurations:
     testKind: time
   gcperfsim_path: "C:\\performance\\artifacts\\bin\\GCPerfSim\\release\\net7.0\\GCPerfSim.dll"
 
-coreruns:
-  baseline:
-    path: C:\CoreRuns\EmitEvent_Core_Root\corerun.exe
-    environment_variables:
-      DOTNET_GCName: clrgc.dll
-  run:
-    path: C:\CoreRuns\EmitEvent_Core_Root\corerun.exe
-    environment_variables:
-      DOTNET_GCName: clrgc.dll
+{coreruns}
 
 environment:
   environment_variables:
